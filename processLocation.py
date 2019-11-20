@@ -29,6 +29,15 @@ for zone in data['features']:
 
 
 
+''' Catch the missing zones '''
+zoneBorough[57], zoneCoordinates[57], zoneVertices[57] = zoneBorough[56], zoneCoordinates[56], zoneVertices[56]
+zoneBorough[104], zoneCoordinates[104], zoneVertices[104] = zoneBorough[103], zoneCoordinates[103], zoneVertices[103]
+zoneBorough[105], zoneCoordinates[105], zoneVertices[105] = zoneBorough[103], zoneCoordinates[103], zoneVertices[103]
+meanCoordinates = [ np.mean(zoneCoordinates.T[0][1:264]), np.mean(zoneCoordinates.T[1][1:264]) ]
+zoneCoordinates[264] = meanCoordinates
+zoneCoordinates[265] = meanCoordinates
+
+
 ''' Plot '''
 ZoneColor = { 0:'c', 1:'r', 2:'y', 3:'b', 4:'g', 5:'m'}
 Boroughcolor = { 0:(0.65,1,1), 1:(1,.65,.65), 2:(1,1,.65), 3:(.65,.65,1), 4:(.65,1,.65), 5:(1,.65,1) }
