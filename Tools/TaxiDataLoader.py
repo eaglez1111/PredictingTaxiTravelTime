@@ -32,8 +32,9 @@ def TaxiDataLoader(FileIndices):
 
     ''' Generate useful features '''
     df['dt'] = df['t1'] - df['t0'] # delta T , duration
-    df['loc_pair'] = (df['loc0'].astype('int32')*_NumOfLoc+df['loc1']) # Location pair ID, one ID refers to one unique start-end location pair
+    #df['loc_pair'] = (df['loc0'].astype('int32')*_NumOfLoc+df['loc1']) # Location pair ID, one ID refers to one unique start-end location pair
     df['wkday'] = df['t1'].dt.weekday # weekday, Mon=0 Sun=6
+
 
     return df
 
