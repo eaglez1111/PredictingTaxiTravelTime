@@ -15,12 +15,13 @@ n_forMeanTemp = 3
 Date = np.arange(np.datetime64('2017','D')-3, np.datetime64('2018','D')+3, dtype='datetime64[D]')
 
 
-if len(sys.argv)>1 and sys.argv[1]=='--demo':
+if __name__ != "__main__" :
+
     ''' Demo - how to load data '''
     [Weather_dict] = np.load('./FeatureData_processed/Weather_dict.npy',allow_pickle = True)
+    print("Weather Data loaded successfully!")
 
-
-else:
+else :
     data = np.loadtxt('./FeatureData_raw/Weather.NYC.2017.csv',delimiter=';', dtype='str',skiprows=7)
     N = len(data)
     Weather = [i[:] for i in [[weather_init] * 24] * (365+n_forMeanTemp*2)]
@@ -71,14 +72,14 @@ else:
 
 
 
-''' Print Examples '''
-print(type(Weather_dict))
+    ''' Print Examples '''
+    print(type(Weather_dict))
 
-Time_Example = [ np.datetime64('2017-01-01 00','h'),
-        (np.datetime64('2017-07-24 09:11:54','m')+30).astype('datetime64[h]'),
-        np.datetime64('2017-12-31 23','h')]
+    Time_Example = [ np.datetime64('2017-01-01 00','h'),
+            (np.datetime64('2017-07-24 09:11:54','m')+30).astype('datetime64[h]'),
+            np.datetime64('2017-12-31 23','h')]
 
-for time in Time_Example:
-    print('\n\nThe weather at',time,':')
-    print(Weather_dict[time])
-    print('[ Humidity, WindSpeed, Visibility, Temp., Temp_Diff, Mist&Haze, Fog, Rain, Snow ] \n\n')
+    for time in Time_Example:
+        print('\n\nThe weather at',time,':')
+        print(Weather_dict[time])
+        print('[ Humidity, WindSpeed, Visibility, Temp., Temp_Diff, Mist&Haze, Fog, Rain, Snow ] \n\n')
