@@ -2,6 +2,13 @@ import numpy as np
 import sys
 
 
+def presenter(Holidays):
+    print("\n\n\n\nPresenting Holidays:\n")
+    print(type(Holidays))
+    print(type(Holidays[0]))
+    print(Holidays)
+
+
 if __name__ != "__main__" :
 
     ''' Demo - how to load data '''
@@ -19,7 +26,4 @@ else:
     Holidays = np.array(Holidays)
     np.save('./FeatureData_processed/Holidays',Holidays)
 
-
-    print(type(Holidays))
-    print(type(Holidays[0]))
-    print(Holidays)
+    presenter(Holidays)

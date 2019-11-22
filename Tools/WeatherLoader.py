@@ -15,6 +15,22 @@ n_forMeanTemp = 3
 Date = np.arange(np.datetime64('2017','D')-3, np.datetime64('2018','D')+3, dtype='datetime64[D]')
 
 
+
+
+def presenter(Weather_dict):
+    print("\n\n\n\nPresenting Weather:\n")
+    print(type(Weather_dict))
+    Time_Example = [ np.datetime64('2017-01-01 00','h'),
+            (np.datetime64('2017-07-24 09:11:54','m')+30).astype('datetime64[h]'),
+            np.datetime64('2017-12-31 23','h')]
+    for time in Time_Example:
+        print('\nThe weather at',time,':')
+        print(Weather_dict[time])
+        print('[ Humidity, WindSpeed, Visibility, Temp., Temp_Diff, Mist&Haze, Fog, Rain, Snow ]')
+
+
+
+
 if __name__ != "__main__" :
 
     ''' Demo - how to load data '''
@@ -73,13 +89,4 @@ else :
 
 
     ''' Print Examples '''
-    print(type(Weather_dict))
-
-    Time_Example = [ np.datetime64('2017-01-01 00','h'),
-            (np.datetime64('2017-07-24 09:11:54','m')+30).astype('datetime64[h]'),
-            np.datetime64('2017-12-31 23','h')]
-
-    for time in Time_Example:
-        print('\n\nThe weather at',time,':')
-        print(Weather_dict[time])
-        print('[ Humidity, WindSpeed, Visibility, Temp., Temp_Diff, Mist&Haze, Fog, Rain, Snow ] \n\n')
+    presenter(Weather_dict)
