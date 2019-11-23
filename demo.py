@@ -16,8 +16,8 @@ from TaxiDataLoader import TaxiDataLoader
 
 
 
-# TaxiZoneLoader.presenter(zoneBorough, zoneCoordinates, zoneVertices)
-# WeatherLoader.presenter(Weather_dict)
+TaxiZoneLoader.presenter(zoneBorough, zoneCoordinates, zoneVertices)
+WeatherLoader.presenter(Weather_dict)
 # HolidayLoader.presenter(Holidays)
 
 df = TaxiDataLoader(range(0,3))
