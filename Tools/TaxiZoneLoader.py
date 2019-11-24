@@ -30,7 +30,20 @@ def presenter(zoneBorough,zoneCoordinates,zoneVertices):
     print("\n\n\n")
 
 
-
+def getDistance(x, y):
+    lat1 = x[0]
+    lon1 = x[1]
+    lat2 = y[0]
+    lon2 = y[1]
+    R = 6371e3
+    phi1 = np.deg2rad(lat1)
+    phi2 = np.deg2rad(lat2)
+    dphi = np.deg2rad(lat2-lat1)
+    dlam = np.deg2rad(lon2-lon1)
+    a = np.sin(dphi/2)*np.sin(dphi/2) + np.cos(phi1)*np.cos(phi2)*np.sin(dlam/2)*np.sin(dlam/2)
+    c = 2*np.arctan2(np.sqrt(a), np.sqrt(1-a))
+    d = R*c
+    return d
 
 if __name__ != "__main__" :
 
@@ -77,13 +90,20 @@ else :
     zoneCoordinates[265] = meanCoordinates
 
 
+    ''' Build Distance Matrix'''
+
+    zoneDistances = np.zeros((266, 266))
+    for i in range(266):
+        for j in range(266):
+            zoneDistances[i][j] = getDistance(zoneCoordinates[i], zoneCoordinates[j])
+    zoneDistances /= np.max(zoneDistances)
 
     ''' Save as .npy to future easy reload '''
 
     np.save('./FeatureData_processed/zoneBorough.npy',zoneBorough)
     np.save('./FeatureData_processed/zoneCoordinates.npy',zoneCoordinates)
     np.save('./FeatureData_processed/zoneVertices.npy',[zoneVertices])
-
+    np.save('./FeatureData_processed/zoneDistances.npy', zoneDistances)
 
     ''' Plot '''
     presenter(zoneBorough, zoneCoordinates, zoneVertices)
