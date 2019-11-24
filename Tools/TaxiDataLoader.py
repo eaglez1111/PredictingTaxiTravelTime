@@ -8,7 +8,7 @@ import pandas as pd
 
 
 _Prefix = './TaxiData/'
-_NumOfLoc = 265
+_NumOfLoc = 266
 _OldColName = [ "VendorID",  "tpep_pickup_datetime", "tpep_dropoff_datetime",    "passenger_count",  "PULocationID", "DOLocationID", "payment_type"  ]
 _NewColName = [ 'vid',       't0',                   't1',                       'ps',               'loc0',         'loc1',         'pt'            ]
 _DataType =   [ 'int8',      'datetime64[s]',        'datetime64[s]',            'int8',             'int16',        'int16',        'int8'          ]
@@ -32,7 +32,7 @@ def TaxiDataLoader(FileIndices):
 
     ''' Generate useful features '''
     df['dt'] = df['t1'] - df['t0'] # delta T , duration
-    #df['loc_pair'] = (df['loc0'].astype('int32')*_NumOfLoc+df['loc1']) # Location pair ID, one ID refers to one unique start-end location pair
+    df['loc_pair'] = (df['loc0'].astype('int32')*_NumOfLoc+df['loc1']) # Location pair ID, one ID refers to one unique start-end location pair
     df['wkday'] = df['t1'].dt.weekday # weekday, Mon=0 Sun=6
 
 
