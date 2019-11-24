@@ -41,7 +41,20 @@ def presenter(ZoneBorough,ZoneCoordinates,ZoneVertices):
     print("\n\n\n")
 
 
-
+def getDistance(x, y):
+    lat1 = x[0]
+    lon1 = x[1]
+    lat2 = y[0]
+    lon2 = y[1]
+    R = 6371e3
+    phi1 = np.deg2rad(lat1)
+    phi2 = np.deg2rad(lat2)
+    dphi = np.deg2rad(lat2-lat1)
+    dlam = np.deg2rad(lon2-lon1)
+    a = np.sin(dphi/2)*np.sin(dphi/2) + np.cos(phi1)*np.cos(phi2)*np.sin(dlam/2)*np.sin(dlam/2)
+    c = 2*np.arctan2(np.sqrt(a), np.sqrt(1-a))
+    d = R*c
+    return d
 
 if __name__ != "__main__" :
 
@@ -79,6 +92,7 @@ else :
                 else:
                     np.append( vertices , np.array(pg) , axis=0 )
         X, Y = vertices.T[0], vertices.T[1]
+<<<<<<< HEAD
         ZoneCoordinates[id] = [np.mean([np.min(X),np.max(X)]),np.mean([np.min(Y),np.max(Y)])]
         ZoneVertices[id]=vertices
 
@@ -123,6 +137,37 @@ else :
     np.save('./FeatureData_processed/EuclideanDistance.npy',EuclideanDistance)
     np.save('./FeatureData_processed/TravelDistance.npy',TravelDistance)
 
+=======
+        zoneCoordinates[id] = [np.mean([np.min(X),np.max(X)]),np.mean([np.min(Y),np.max(Y)])]
+        zoneVertices[id]=vertices
+
+
+
+    ''' Catch the missing zones '''
+
+    zoneBorough[57], zoneCoordinates[57], zoneVertices[57] = zoneBorough[56], zoneCoordinates[56], zoneVertices[56]
+    zoneBorough[104], zoneCoordinates[104], zoneVertices[104] = zoneBorough[103], zoneCoordinates[103], zoneVertices[103]
+    zoneBorough[105], zoneCoordinates[105], zoneVertices[105] = zoneBorough[103], zoneCoordinates[103], zoneVertices[103]
+    meanCoordinates = [ np.mean(zoneCoordinates.T[0][1:264]), np.mean(zoneCoordinates.T[1][1:264]) ]
+    zoneCoordinates[264] = meanCoordinates
+    zoneCoordinates[265] = meanCoordinates
+
+
+    ''' Build Distance Matrix'''
+
+    zoneDistances = np.zeros((266, 266))
+    for i in range(266):
+        for j in range(266):
+            zoneDistances[i][j] = getDistance(zoneCoordinates[i], zoneCoordinates[j])
+    zoneDistances /= np.max(zoneDistances)
+
+    ''' Save as .npy to future easy reload '''
+
+    np.save('./FeatureData_processed/zoneBorough.npy',zoneBorough)
+    np.save('./FeatureData_processed/zoneCoordinates.npy',zoneCoordinates)
+    np.save('./FeatureData_processed/zoneVertices.npy',[zoneVertices])
+    np.save('./FeatureData_processed/zoneDistances.npy', zoneDistances)
+>>>>>>> 5d50529a7c8c780c3d1e87b213349ed298253e7e
 
     ''' Plot '''
     presenter(ZoneBorough, ZoneCoordinates, ZoneVertices)
