@@ -16,14 +16,10 @@ from TaxiDataLoader import TaxiDataLoader
 
 
 
-<<<<<<< HEAD
 
 TaxiZoneLoader.presenter(ZoneBorough, ZoneCoordinates, ZoneVertices)
+TaxiZoneLoader.plotDistance(EuclideanDistance,TravelDistance,100)
 # WeatherLoader.presenter(Weather_dict)
-=======
-TaxiZoneLoader.presenter(zoneBorough, zoneCoordinates, zoneVertices)
-WeatherLoader.presenter(Weather_dict)
->>>>>>> 5d50529a7c8c780c3d1e87b213349ed298253e7e
 # HolidayLoader.presenter(Holidays)
 
 df = TaxiDataLoader(range(0,3))
