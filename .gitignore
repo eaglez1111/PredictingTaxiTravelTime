@@ -1,4 +1,7 @@
 TaxiData/
+TaxiData_original/
+TaxiData_unshuffled/
+TaxiData.zip
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
