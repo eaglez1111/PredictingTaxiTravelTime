@@ -82,7 +82,7 @@ def prepare_targets(df):
 
 
 
-def train(file_batch_size=10, input_batch_size=20, num_epochs=1):
+def train(file_batch_size=10, input_batch_size=20, num_epochs=10):
     travel_distances = np.load('./FeatureData_processed/TravelDistance.npy')
     #euclid_distances = np.load('./FeatureData_processed/EuclideanDistance.npy')
     zone_coordinates = np.load('./FeatureData_processed/ZoneCoordinates.npy')
@@ -93,14 +93,15 @@ def train(file_batch_size=10, input_batch_size=20, num_epochs=1):
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
     criterion = nn.L1Loss()
 
-    file_idxs = np.arange(200)
+    end_idx = 200
+    file_idxs = np.arange(end_idx)
     val_loss = 0
     for epoch_idx in tqdm(range(num_epochs)):
         np.random.shuffle(file_idxs)
 
         # train over batch
         mlp.train()
-        train_file_idxs = file_idxs[:20]
+        train_file_idxs = file_idxs[:end_idx]
         train_file_idxs = train_file_idxs.reshape(-1,file_batch_size)
         train_loss = 0
         for train_file_batch in train_file_idxs:
@@ -148,7 +149,7 @@ def train(file_batch_size=10, input_batch_size=20, num_epochs=1):
         if epoch_idx%2==0:
             tqdm.write(f'epoch {epoch_idx} \t train_loss = {train_loss:.2f} \t val_loss = {val_loss:.2f}')
     num_models = len(os.listdir('models'))
-    torch.save(mlp.state_dict(), 'models/mlp_{num_models}')
+    torch.save(mlp.state_dict(), f'models/mlp_{num_models}')
 
 
 
