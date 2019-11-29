@@ -64,6 +64,8 @@ def prepare_inputs(df, travel_distances, zone_coordinates):
     t0 = t0.to_numpy().reshape(-1,1)
 
     input = np.hstack((loc0_lat, loc0_lon, loc1_lat, loc1_lon, dists, t0))
+    normalizer = np.amax(input, axis=0)
+    input = input / normalizer
     input = torch.FloatTensor(input)
     input = input.to(device)
     return input
@@ -82,7 +84,7 @@ def prepare_targets(df):
 
 
 
-def train(file_batch_size=10, input_batch_size=20, num_epochs=10):
+def train(file_batch_size=10, input_batch_size=20, num_epochs=5):
     travel_distances = np.load('./FeatureData_processed/TravelDistance.npy')
     euclid_distances = np.load('./FeatureData_processed/EuclideanDistance.npy')
     zone_coordinates = np.load('./FeatureData_processed/ZoneCoordinates.npy')
@@ -91,7 +93,7 @@ def train(file_batch_size=10, input_batch_size=20, num_epochs=10):
     mlp = mlp.to(device)
     optimizer = torch.optim.SGD(mlp.parameters(), lr=1e-12)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
-    criterion = nn.L1Loss()
+    criterion = nn.MSELoss()
 
     num_files = 634
     num_train = 200
@@ -111,7 +113,8 @@ def train(file_batch_size=10, input_batch_size=20, num_epochs=10):
         train_file_idxs = train_idxs[:num_train]
         train_file_idxs = train_file_idxs.reshape(-1,file_batch_size)
         train_loss = 0
-        for train_file_batch in train_file_idxs:
+        tqdm.write(f'epoch {epoch_idx}')
+        for batch_num, train_file_batch in enumerate(train_file_idxs):
             df = TaxiDataLoader(train_file_batch)
             #inputs = prepare_inputs(df, travel_distances, zone_coordinates)
             inputs = prepare_inputs(df, euclid_distances, zone_coordinates)
@@ -131,6 +134,8 @@ def train(file_batch_size=10, input_batch_size=20, num_epochs=10):
                 file_batch_loss += loss.item()
                 scheduler.step(val_loss)
             file_batch_loss /= inputs.shape[0]
+            if batch_num %5 == 0:
+                tqdm.write(f'\tbatch {batch_num} loss {file_batch_loss:.2f}')
             train_loss += file_batch_loss
         train_loss /= train_file_idxs.shape[0]
 
@@ -155,7 +160,7 @@ def train(file_batch_size=10, input_batch_size=20, num_epochs=10):
         val_loss = batch_loss
    
         if epoch_idx%1==0:
-            tqdm.write(f'epoch {epoch_idx} \t train_loss = {train_loss:.2f} \t val_loss = {val_loss:.2f}')
+            tqdm.write(f'train_loss = {train_loss:.2f} val_loss = {val_loss:.2f}\n')
     num_models = len(os.listdir('models'))
     torch.save(mlp.state_dict(), f'models/mlp_{num_models}')
 
