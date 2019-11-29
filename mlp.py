@@ -84,7 +84,7 @@ def prepare_targets(df):
 
 def train(file_batch_size=10, input_batch_size=20, num_epochs=10):
     travel_distances = np.load('./FeatureData_processed/TravelDistance.npy')
-    #euclid_distances = np.load('./FeatureData_processed/EuclideanDistance.npy')
+    euclid_distances = np.load('./FeatureData_processed/EuclideanDistance.npy')
     zone_coordinates = np.load('./FeatureData_processed/ZoneCoordinates.npy')
 
     mlp = MultiLayerPerceptron(input_dim=6)
@@ -93,20 +93,28 @@ def train(file_batch_size=10, input_batch_size=20, num_epochs=10):
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
     criterion = nn.L1Loss()
 
-    end_idx = 200
-    file_idxs = np.arange(end_idx)
+    num_files = 634
+    num_train = 200
+    num_val = num_train // 20
+
+    val_idxs = np.arange(num_files)
+    np.random.shuffle(val_idxs)
+    val_idxs = val_idxs[:num_val]
     val_loss = 0
+
+    train_idxs = np.asarray([idx for idx in range(num_files) if idx not in val_idxs])
     for epoch_idx in tqdm(range(num_epochs)):
-        np.random.shuffle(file_idxs)
+        np.random.shuffle(train_idxs)
 
         # train over batch
         mlp.train()
-        train_file_idxs = file_idxs[:end_idx]
+        train_file_idxs = train_idxs[:num_train]
         train_file_idxs = train_file_idxs.reshape(-1,file_batch_size)
         train_loss = 0
         for train_file_batch in train_file_idxs:
             df = TaxiDataLoader(train_file_batch)
-            inputs = prepare_inputs(df, travel_distances, zone_coordinates)
+            #inputs = prepare_inputs(df, travel_distances, zone_coordinates)
+            inputs = prepare_inputs(df, euclid_distances, zone_coordinates)
             targets = prepare_targets(df)
             batch_idxs = np.arange(0,inputs.shape[0],input_batch_size)
             np.random.shuffle(batch_idxs)
@@ -128,9 +136,9 @@ def train(file_batch_size=10, input_batch_size=20, num_epochs=10):
 
         # compute validation loss
         mlp.eval()
-        val_file_idxs = file_idxs[-10:]
-        df = TaxiDataLoader(val_file_idxs)
-        inputs = prepare_inputs(df, travel_distances, zone_coordinates)
+        df = TaxiDataLoader(val_idxs)
+        #inputs = prepare_inputs(df, travel_distances, zone_coordinates)
+        inputs = prepare_inputs(df, euclid_distances, zone_coordinates)
         targets = prepare_targets(df)
         batch_idxs = np.arange(0,inputs.shape[0],input_batch_size)
         np.random.shuffle(batch_idxs)
@@ -146,7 +154,7 @@ def train(file_batch_size=10, input_batch_size=20, num_epochs=10):
         batch_loss /= inputs.shape[0]
         val_loss = batch_loss
    
-        if epoch_idx%2==0:
+        if epoch_idx%1==0:
             tqdm.write(f'epoch {epoch_idx} \t train_loss = {train_loss:.2f} \t val_loss = {val_loss:.2f}')
     num_models = len(os.listdir('models'))
     torch.save(mlp.state_dict(), f'models/mlp_{num_models}')
