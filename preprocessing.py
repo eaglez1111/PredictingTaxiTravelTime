@@ -27,8 +27,14 @@ for i in range(674):
     filter = pd.Series(df['t0'].dt.year == 2017)
     df = df[filter.values]
 
+
+
     df['start_time'] = df['t0'].apply(t2secs)
     df['travel_time'] = df['dt'].apply(dt2secs)
+
+    df = df[df['travel_time'] > 30]
+    df = df[df['travel_time'] < 3600*10]
+
     df['euc_dist'] = euclidianDistance[df['loc0'], df['loc1']]
     df['real_dist'] = travelDistance[df['loc0'], df['loc1']]
     df['bor0'] = zoneBorough[df['loc0']]

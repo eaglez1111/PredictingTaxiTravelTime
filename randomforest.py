@@ -5,9 +5,9 @@ import pandas as pd
 import numpy as np
 
 # how many files to test on
-TEST_SIZE = 20
+TEST_SIZE = 60
 # how many files to train on
-TRAIN_SIZE = 200
+TRAIN_SIZE = 600
 # how many files to train on at a time
 BATCH_SIZE = 5
 # how many trees to add per batch
@@ -19,21 +19,21 @@ test_files = shuffled_files[TRAIN_SIZE:TRAIN_SIZE+TEST_SIZE]
 
 # the features you want to use for training
 features = [
-    # "vid",
-    # "ps",
+    "vid",
+    "ps",
     # "wkday",
     # "start_time",
     # "euc_dist",
     "real_dist",
-    # "humidity",
-    # "windspeed",
-    # "vis",
-    # "temp",
-    # "haze",
-    # "fog",
-    # "rain",
-    # "snow",
-    # "hday",
+    "humidity",
+    "windspeed",
+    "vis",
+    "temp",
+    "haze",
+    "fog",
+    "rain",
+    "snow",
+    "hday",
     "bor0_0",
     "bor0_1",
     "bor0_2",
@@ -46,12 +46,12 @@ features = [
     "bor1_3",
     "bor1_4",
     "bor1_5",
-    "morn",
-    "aftnoon",
-    "night"
+    # "morn",
+    # "aftnoon",
+    # "night"
 ]
-# for i in range(24):
-#     features.append("hour_{}".format(i))
+for i in range(24):
+    features.append("hour_{}".format(i))
 
 for i in range(7):
     features.append("wkday_{}".format(i))
@@ -64,9 +64,14 @@ for idx in test_files:
     print("Loaded df_{}".format(idx))
     test_dfs.append(df)
 test_df = pd.concat(test_dfs)
+test_df = test_df[test_df['travel_time'] >= 60]
+test_df = test_df[test_df['travel_time'] <= 3600*4]
 test_X = test_df[features]
 test_y = test_df["travel_time"]
+print(np.sort(test_y)[-1000:-1])
 print(np.mean(test_y))
+print(np.mean(test_y) + 4*np.std(test_y))
+print(np.percentile(test_y, [0.1, 99.9]))
 
 for feat in features:
     corr = np.corrcoef(test_X[feat], test_y)[0,1]
@@ -83,6 +88,8 @@ for idx in range(TRAIN_SIZE // BATCH_SIZE):
     for i in slice:
         train_dfs.append(pickle.load(open("PreProcessedData/df_{}.pkl".format(i), "rb")))
     df = pd.concat(train_dfs)
+    df = df[df['travel_time'] >= 60]
+    df = df[df['travel_time'] <= 3600 * 4]
     print("Loaded Batch".format(idx))
     X = df[features]
     y = df["travel_time"]
@@ -95,6 +102,7 @@ for idx in range(TRAIN_SIZE // BATCH_SIZE):
         mean_error = np.mean(np.abs(preds - y))
         print("Training")
         print("Mean Error: {}".format(mean_error))
+        print("Median Error: {}".format(np.median(np.abs(preds - y))))
         rsme = np.sqrt(np.mean(np.square(preds - y)))
         print("RSME: {}".format(rsme))
 
@@ -102,6 +110,10 @@ for idx in range(TRAIN_SIZE // BATCH_SIZE):
         mean_error = np.mean(np.abs(preds - test_y))
         print("Testing")
         print("Mean Error: {}".format(mean_error))
+        print("Median Error: {}".format(np.median(np.abs(preds - test_y))))
+        print("Max Error: {}".format(np.max(np.abs(preds - test_y))))
+        print(np.max(test_y))
+        print(np.min(test_y))
         rsme = np.sqrt(np.mean(np.square(preds - test_y)))
         print("RSME: {}".format(rsme))
 
