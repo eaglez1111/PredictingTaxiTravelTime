@@ -3,6 +3,7 @@ TaxiData_original/
 TaxiData_unshuffled/
 TaxiData.zip
 PreProcessedData/
+models/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
