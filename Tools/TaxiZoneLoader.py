@@ -16,15 +16,15 @@ def presenter(ZoneBorough,ZoneCoordinates,ZoneVertices):
     for id in range(N):
         if ZoneBorough[id]==-1: continue
         print(id,ZoneCoordinates[id][0],ZoneCoordinates[id][1],ZoneBorough[id],ZoneName[id])
-        plt.text(ZoneCoordinates[id][0],ZoneCoordinates[id][1],str(id),label='')
+        plt.text(ZoneCoordinates[id][0],ZoneCoordinates[id][1],str(id),label='',fontsize=7)
         plt.plot(ZoneCoordinates[id][0],ZoneCoordinates[id][1],'*'+ZoneColor[ZoneBorough[id]] )
-        plt.fill(ZoneVertices[id].T[0],ZoneVertices[id].T[1],color=Boroughcolor[ZoneBorough[id]])
+        plt.fill(ZoneVertices[id].T[0],ZoneVertices[id].T[1],facecolor=Boroughcolor[ZoneBorough[id]],edgecolor=(.85,.8,.8))
         # n = len(ZoneVertices[id])
         # for i in range(n):
         #     j = (i+1)%n
         #     plt.plot(ZoneVertices[id].T[0][[i,j]], ZoneVertices[id].T[1][[i,j]],'-k',label='')
-    plt.xlabel('x')
-    plt.ylabel('y')
+    plt.xlabel('Longitude')
+    plt.ylabel('Latitude')
     plt.title('')
     #plt.legend(loc='bottom right')
     plt.show()
@@ -46,7 +46,7 @@ def plotDistance(EuclideanDistance,TravelDistance,loc0=1): # give different loc0
 
 
 
-if __name__ != "__main__" :
+if __name__ != "__main__" or sys.argv[1]=='load' :
 
     ''' Load TaxiZone data '''
     ZoneBorough = np.load('./FeatureData_processed/ZoneBorough.npy',allow_pickle = True)
@@ -59,7 +59,7 @@ if __name__ != "__main__" :
     print("Taxi Zone Data loaded successfully!")
 
 
-else :
+else:
 
     ''' Load TaxiZone Data and save '''
 
