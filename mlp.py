@@ -84,7 +84,7 @@ def prepare_targets(df):
 
 
 
-def train(file_batch_size=10, input_batch_size=20, num_epochs=5):
+def train(file_batch_size=10, input_batch_size=20, num_epochs=20):
     travel_distances = np.load('./FeatureData_processed/TravelDistance.npy')
     euclid_distances = np.load('./FeatureData_processed/EuclideanDistance.npy')
     zone_coordinates = np.load('./FeatureData_processed/ZoneCoordinates.npy')
@@ -94,6 +94,7 @@ def train(file_batch_size=10, input_batch_size=20, num_epochs=5):
     optimizer = torch.optim.SGD(mlp.parameters(), lr=1e-12)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
     criterion = nn.MSELoss()
+    val_criterion = nn.L1Loss()
 
     num_files = 634
     num_train = 200
@@ -149,22 +150,23 @@ def train(file_batch_size=10, input_batch_size=20, num_epochs=5):
         np.random.shuffle(batch_idxs)
         batch_idxs = batch_idxs.reshape(-1,input_batch_size)
         batch_loss = 0
+        val_l1loss = list()
         for batch_idx in range(batch_idxs.shape[0]):
             idxs = torch.LongTensor(batch_idxs[batch_idx]).to(device)
             input = torch.index_select(inputs, 0, idxs)
             target = torch.index_select(targets, 0, idxs)
             output = mlp(input)
+            l1loss = np.abs(target-output)
+            val_l1loss.append(l1loss)
             loss = criterion(output, target)
             batch_loss += loss.item()
         batch_loss /= inputs.shape[0]
         val_loss = batch_loss
    
         if epoch_idx%1==0:
-            tqdm.write(f'train_loss = {train_loss:.2f} val_loss = {val_loss:.2f}\n')
+            tqdm.write(f'\ttrain_loss = {train_loss:.2f} val_loss = {val_loss:.2f}\n')
     num_models = len(os.listdir('models'))
     torch.save(mlp.state_dict(), f'models/mlp_{num_models}')
-
-
 
 
 if __name__ == '__main__':
