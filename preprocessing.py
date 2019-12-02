@@ -19,9 +19,9 @@ t2secs = lambda t: 3600*t.hour + 60*t.minute + t.second
 dt2secs = lambda dt: dt.seconds + 86400*dt.days
 getHour = lambda t: t.hour
 
-for i in range(674):
-    print("{}/674".format(i+1))
-    df = TaxiDataLoader([i])
+for idx in range(674):
+    print("{}/674".format(idx+1))
+    df = TaxiDataLoader([idx])
 
     # handles those weird rows
     filter = pd.Series(df['t0'].dt.year == 2017)
@@ -70,5 +70,9 @@ for i in range(674):
 
     df = pd.get_dummies(df, columns=['bor0', 'bor1', 'wkday', 'hour'])
 
-    df.to_pickle('PreProcessedData/df_{}.pkl'.format(i+1))
+    for i in range(6):
+        for j in range(6):
+            df['bor{}to{}'.format(i, j)] = df['bor0_{}'.format(i)] * df['bor1_{}'.format(j)]
+
+    df.to_pickle('PreProcessedData/df_{}.pkl'.format(idx+1))
 

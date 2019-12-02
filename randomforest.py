@@ -34,18 +34,18 @@ features = [
     "rain",
     "snow",
     "hday",
-    "bor0_0",
-    "bor0_1",
-    "bor0_2",
-    "bor0_3",
-    "bor0_4",
-    "bor0_5",
-    "bor1_0",
-    "bor1_1",
-    "bor1_2",
-    "bor1_3",
-    "bor1_4",
-    "bor1_5",
+    # "bor0_0",
+    # "bor0_1",
+    # "bor0_2",
+    # "bor0_3",
+    # "bor0_4",
+    # "bor0_5",
+    # "bor1_0",
+    # "bor1_1",
+    # "bor1_2",
+    # "bor1_3",
+    # "bor1_4",
+    # "bor1_5",
     # "morn",
     # "aftnoon",
     # "night"
@@ -55,6 +55,10 @@ for i in range(24):
 
 for i in range(7):
     features.append("wkday_{}".format(i))
+
+for i in range(6):
+    for j in range(6):
+        features.append("bor{}to{}".format(i,j))
 
 
 test_dfs = []
@@ -72,6 +76,8 @@ print(np.sort(test_y)[-1000:-1])
 print(np.mean(test_y))
 print(np.mean(test_y) + 4*np.std(test_y))
 print(np.percentile(test_y, [0.1, 99.9]))
+
+
 
 for feat in features:
     corr = np.corrcoef(test_X[feat], test_y)[0,1]
