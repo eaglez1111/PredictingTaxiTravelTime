@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 
 # how many files to test on
-TEST_SIZE = 10
+TEST_SIZE = 1
 # how many files to train on
 TRAIN_SIZE = 100
 # how many files to train on at a time
@@ -43,6 +43,14 @@ for i in range(6):
         features.append("bor{}to{}".format(i,j))
 
 
+
+def reportErr(err,attention=''):
+    print("RMSE(L2): {}".format( np.linalg.norm(err)/np.sqrt(len(err)) ))
+    print(attention+"L1 Error: {}".format( np.mean(np.abs(err)) ))
+    print("Median Error: {}".format( np.median(np.abs(err)) ))
+
+
+
 test_dfs = []
 print("Loading Test Data")
 for idx in test_files:
@@ -54,10 +62,8 @@ test_df = test_df[test_df['travel_time'] >= 60]
 test_df = test_df[test_df['travel_time'] <= 3600*4]
 test_X = test_df[features]
 test_y = test_df["travel_time"]
-print(np.sort(test_y)[-1000:-1])
-print(np.mean(test_y))
-print(np.mean(test_y) + 4*np.std(test_y))
-print(np.percentile(test_y, [0.1, 99.9]))
+print('travel_time - max, min, mean:',np.max(test_y),np.min(test_y),np.mean(test_y))
+
 
 
 
@@ -66,12 +72,11 @@ for feat in features:
     print("{}: {}".format(feat, corr))
 
 
-print("training")
-#lr = sklearn.linear_model.LinearRegression()
-MLP_list = []
+print("\n\n\n\n\n\n\ntraining")
 
+MLP_list = []
 for idx in range(TRAIN_SIZE // BATCH_SIZE):
-    lr = sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(100, 50, 20),verbose=False,max_iter=80 , learning_rate_init=0.01, warm_start=False,early_stopping=True)
+    mlp = sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(30,20,20,10),verbose=False,max_iter=80,learning_rate_init=0.01,warm_start=False,early_stopping=True)
     slice = train_files[BATCH_SIZE * idx:BATCH_SIZE * (idx + 1)]
     train_dfs = []
     for i in slice:
@@ -83,42 +88,20 @@ for idx in range(TRAIN_SIZE // BATCH_SIZE):
     X = df[features]
     y = df["travel_time"]
 
-    lr.fit(X, y)
-    MLP_list.append(lr)
+    mlp.fit(X, y)
+    MLP_list.append(mlp)
 
     if idx % 1 == 0:
-        preds = lr.predict(X)
-        mean_error = np.mean(np.abs(preds - y))
-        print("Training******************")
-        print("Mean Error: {}".format(mean_error))
-        print("Median Error: {}".format(np.median(np.abs(preds - y))))
-        rsme = np.sqrt(np.mean(np.square(preds - y)))
-        print("RSME: {}".format(rsme))
+        preds = mlp.predict(X)
+        print("Training")
+        reportErr(preds-y)
 
         preds = [MLP.predict(test_X) for MLP in MLP_list]
-        # preds = np.asarray(preds)
-        preds = np.column_stack(preds)
-        print(preds.shape)
-        preds = np.mean(preds, axis=1)
-        # print(preds[0].shape)
-        # print("LOOK HERE")
-        # print(preds.shape)
-        # preds = lr.predict(test_X)
-        mean_error = np.mean(np.abs(preds - test_y))
-        print("Testing####################")
-        print("Mean Error: {}".format(mean_error))
-        print("Median Error: {}".format(np.median(np.abs(preds - test_y))))
-        print("Max Error: {}".format(np.max(np.abs(preds - test_y))))
-        print(np.max(test_y))
-        print(np.min(test_y))
-        rsme = np.sqrt(np.mean(np.square(preds - test_y)))
-        print("RSME: {}".format(rsme))
+        preds = np.mean(preds, axis=0)
+        print("Testing")
+        reportErr(preds-test_y,'****************')
 
-        sample_mean = np.mean(y)
-        mean_error = np.mean(np.abs(sample_mean - test_y))
-        print("Naive Testing")
-        print("Mean Error: {}".format(mean_error))
-        rsme = np.sqrt(np.mean(np.square(sample_mean - test_y)))
-        print("RSME: {}".format(rsme))
+        print("Naive Testing:")
+        reportErr(np.mean(y)-test_y)
 
-pickle.dump(lr, open("Models/LinearRegression.pkl", "wb"))
+#pickle.dump(MLP_list, open("Models/LinearRegression.pkl", "wb"))
