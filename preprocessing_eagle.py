@@ -62,24 +62,25 @@ for idx in range(674):
     days = df['t0'].values.astype('datetime64[D]')
     df['hday'] = [(d in holidays or (d-1) in holidays) for d in days]
 
-    for i in range(2,4+1):
-        df['wkday^{}'.format(i)] = df['wkday']**i
     for i in range(2,6+1):
+        df['wkday^{}'.format(i)] = df['wkday']**i
+    for i in range(2,8+1):
         df['hour^{}'.format(i)] = df['hour']**i
 
-    # df['hour'] = df['hour'].astype(CategoricalDtype(categories=range(24)))
-    # df['wkday'] = df['wkday'].astype(CategoricalDtype(categories=range(7)))
+    df['h'], df['wkd'] = df['hour'], df['wkday']
+    df['hour'] = df['hour'].astype(CategoricalDtype(categories=range(24)))
+    df['wkday'] = df['wkday'].astype(CategoricalDtype(categories=range(7)))
 
     df['bor0'] = df['bor0'].astype(CategoricalDtype(categories=range(6)))
     df['bor1'] = df['bor1'].astype(CategoricalDtype(categories=range(6)))
 
-    df = pd.get_dummies(df, columns=['bor0', 'bor1']) #, 'wkday', 'hour'])
+    df = pd.get_dummies(df, columns=['bor0', 'bor1', 'wkday', 'hour'])
 
     for i in range(6):
         for j in range(6):
             df['bor{}to{}'.format(i, j)] = df['bor0_{}'.format(i)] * df['bor1_{}'.format(j)]
 
-    for col in ['t0','t1','loc0','loc1','loc_pair','dt','bor0_0', 'bor0_1', 'bor0_2', 'bor0_3', 'bor0_4', 'bor0_5', 'bor1_0', 'bor1_1', 'bor1_2', 'bor1_3', 'bor1_4', 'bor1_5']:
+    for col in ['t0','t1','loc0','loc1','loc_pair','dt']:#,'bor0_0', 'bor0_1', 'bor0_2', 'bor0_3', 'bor0_4', 'bor0_5', 'bor1_0', 'bor1_1', 'bor1_2', 'bor1_3', 'bor1_4', 'bor1_5']:
         del df[col]
 
 

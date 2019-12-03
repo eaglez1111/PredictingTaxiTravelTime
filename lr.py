@@ -5,9 +5,9 @@ import pandas as pd
 import numpy as np
 
 # how many files to test on
-TEST_SIZE = 10
+TEST_SIZE = 1
 # how many files to train on
-TRAIN_SIZE = 100
+TRAIN_SIZE = 1
 # how many files to train on at a time
 BATCH_SIZE = 1
 
@@ -18,25 +18,26 @@ test_files = 1+np.arange(TEST_SIZE)#shuffled_files[TRAIN_SIZE:TRAIN_SIZE+TEST_SI
 
 # the features you want to use for training
 features = [
-    "vid",
-    "ps",
-    "wkday",
+    # "vid",
+    # "ps",
+    "wkd",
+    'h',
     "start_time",
-    # "euc_dist",
+    "euc_dist",
     "real_dist",
-    "humidity",
-    "windspeed",
-    "vis",
-    "temp",
-    "haze",
-    "fog",
-    "rain",
-    "snow",
-    "hday",
+    # "humidity",
+    # "windspeed",
+    # "vis",
+    # "temp",
+    # "haze",
+    # "fog",
+    # "rain",
+    # "snow",
+    # "hday",
 ]
-for i in range(2,4+1):
+for i in range(2,2+1):
     features.append('wkday^{}'.format(i))
-for i in range(2,6+1):
+for i in range(2,4+1):
     features.append('hour^{}'.format(i))
 for i in range(6):
     for j in range(6):
@@ -67,6 +68,16 @@ for feat in features:
     print("{}: {}".format(feat, corr))
 
 
+
+
+def reportErr(err,attention=''):
+    print("RMSE(L2): {}".format( np.linalg.norm(err)/np.sqrt(len(err)) ))
+    print(attention+"L1 Error: {}".format( np.mean(np.abs(err)) ))
+    print("Median Error: {}".format( np.median(np.abs(err)) ))
+
+
+
+
 print("training")
 lr = sklearn.linear_model.LinearRegression()
 for idx in range(TRAIN_SIZE // BATCH_SIZE):
@@ -83,31 +94,16 @@ for idx in range(TRAIN_SIZE // BATCH_SIZE):
 
     lr.fit(X, y)
 
+
     if idx % 1 == 0:
-        preds = lr.predict(X)
-        mean_error = np.mean(np.abs(preds - y))
-        print("Training")
-        print("Mean Error: {}".format(mean_error))
-        print("Median Error: {}".format(np.median(np.abs(preds - y))))
-        rsme = np.sqrt(np.mean(np.square(preds - y)))
-        print("RSME: {}".format(rsme))
+        print("Training Error")
+        reportErr(lr.predict(X)-y)
 
-        preds = lr.predict(test_X)
-        mean_error = np.mean(np.abs(preds - test_y))
-        print("Testing")
-        print("Mean Error: {}".format(mean_error))
-        print("Median Error: {}".format(np.median(np.abs(preds - test_y))))
-        print("Max Error: {}".format(np.max(np.abs(preds - test_y))))
-        print(np.max(test_y))
-        print(np.min(test_y))
-        rsme = np.sqrt(np.mean(np.square(preds - test_y)))
-        print("RSME: {}".format(rsme))
+        #preds = [MLP.predict(test_X) for MLP in MLP_list]
+        #preds = np.mean(preds, axis=0)
+        print("Testing Error")
+        reportErr(lr.predict(test_X)-test_y,'**********************************')
 
-        sample_mean = np.mean(y)
-        mean_error = np.mean(np.abs(sample_mean - test_y))
-        print("Naive Testing")
-        print("Mean Error: {}".format(mean_error))
-        rsme = np.sqrt(np.mean(np.square(sample_mean - test_y)))
-        print("RSME: {}".format(rsme))
-
+        print("Naive Testing:")
+        reportErr(np.mean(y)-test_y)
 pickle.dump(lr, open("Models/RandomForest.pkl", "wb"))

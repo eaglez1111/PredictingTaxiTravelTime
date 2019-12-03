@@ -1,28 +1,28 @@
 import pickle
 import sklearn
 import sklearn.ensemble
-import sklearn.neural_network as nn
 import pandas as pd
 import numpy as np
 
 # how many files to test on
 TEST_SIZE = 1
 # how many files to train on
-TRAIN_SIZE = 100
+TRAIN_SIZE = 600
 # how many files to train on at a time
 BATCH_SIZE = 1
+# how many trees to add per batch
+TREES_PER_BATCH = 8
 
-#shuffled_files = np.random.permutation(np.arange(1, 675))
-train_files = 1+np.arange(TEST_SIZE,TEST_SIZE+TRAIN_SIZE)#shuffled_files[:TRAIN_SIZE]
-test_files = 1+np.arange(TEST_SIZE)#shuffled_files[TRAIN_SIZE:TRAIN_SIZE+TEST_SIZE]
+shuffled_files = np.arange(1, 675)#np.random.permutation(np.arange(1, 675))
+train_files = shuffled_files[TEST_SIZE:TRAIN_SIZE+TEST_SIZE]
+test_files = shuffled_files[ 0:TEST_SIZE]
 
 # the features you want to use for training
 features = [
     # "vid",
     # "ps",
-    # "wkday",
     "start_time",
-    # "euc_dist",
+    "euc_dist",
     "real_dist",
     # "humidity",
     # "windspeed",
@@ -33,22 +33,35 @@ features = [
     # "rain",
     # "snow",
     # "hday",
+    # "bor0_0",
+    # "bor0_1",
+    # "bor0_2",
+    # "bor0_3",
+    # "bor0_4",
+    # "bor0_5",
+    # "bor1_0",
+    # "bor1_1",
+    # "bor1_2",
+    # "bor1_3",
+    # "bor1_4",
+    # "bor1_5",
+    "wkd",
+    # "h",
 ]
-# for i in range(2,4+1):
-#     features.append('wkday^{}'.format(i))
-# for i in range(2,6+1):
-#     features.append('hour^{}'.format(i))
+# for i in range(24):
+#     features.append("hour_{}".format(i))
+#
+# for i in range(7):
+#     features.append("wkday_{}".format(i))
+
 for i in range(6):
     for j in range(6):
         features.append("bor{}to{}".format(i,j))
 
-
-
-def reportErr(err,attention=''):
-    print("RMSE(L2): {}".format( np.linalg.norm(err)/np.sqrt(len(err)) ))
-    print(attention+"L1 Error: {}".format( np.mean(np.abs(err)) ))
-    print("Median Error: {}".format( np.median(np.abs(err)) ))
-
+# for i in range(2,4+1):
+#     features.append('wkday^{}'.format(i))
+# for i in range(2,6+1):
+#     features.append('hour^{}'.format(i))
 
 
 test_dfs = []
@@ -62,8 +75,10 @@ test_df = test_df[test_df['travel_time'] >= 60]
 test_df = test_df[test_df['travel_time'] <= 3600*4]
 test_X = test_df[features]
 test_y = test_df["travel_time"]
-print('travel_time - max, min, mean:',np.max(test_y),np.min(test_y),np.mean(test_y))
-
+print(np.sort(test_y)[-1000:-1])
+print(np.mean(test_y))
+print(np.mean(test_y) + 4*np.std(test_y))
+print(np.percentile(test_y, [0.1, 99.9]))
 
 
 
@@ -72,11 +87,19 @@ for feat in features:
     print("{}: {}".format(feat, corr))
 
 
-print("\n\n\n\n\n\n\ntraining")
 
-MLP_list = []
-mlp = sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(30,20,5),verbose=True,max_iter=100,learning_rate_init=0.001,warm_start=True,early_stopping=True)
 
+def reportErr(err,attention=''):
+    print("RMSE(L2): {}".format( np.linalg.norm(err)/np.sqrt(len(err)) ))
+    print(attention+"L1 Error: {}".format( np.mean(np.abs(err)) ))
+    print("Median Error: {}".format( np.median(np.abs(err)) ))
+
+
+
+
+print("training")
+rf = sklearn.ensemble.RandomForestRegressor(n_estimators=0, min_samples_split=4, min_samples_leaf=8,
+                                            max_features="auto", warm_start=True, n_jobs=-1, verbose=0)
 for idx in range(TRAIN_SIZE // BATCH_SIZE):
     slice = train_files[BATCH_SIZE * idx:BATCH_SIZE * (idx + 1)]
     train_dfs = []
@@ -84,24 +107,24 @@ for idx in range(TRAIN_SIZE // BATCH_SIZE):
         train_dfs.append(pickle.load(open("PreProcessedData_eagle/df_{}.pkl".format(i), "rb")))
     df = pd.concat(train_dfs)
     df = df[df['travel_time'] >= 60]
-    df = df[df['travel_time'] <= 3600 * 0.5]
-    print("Loaded Batch-{}".format(idx))
+    df = df[df['travel_time'] <= 3600 * 4]
+    print("Loaded Batch - {}".format(idx))
     X = df[features]
     y = df["travel_time"]
 
-    mlp.fit(X, y)
-    #MLP_list.append(mlp)
+    rf.n_estimators += TREES_PER_BATCH
+    rf.fit(X, y)
 
     if idx % 1 == 0:
         print("Training Error")
-        reportErr(mlp.predict(X)-y)
+        reportErr(rf.predict(X)-y)
 
         #preds = [MLP.predict(test_X) for MLP in MLP_list]
         #preds = np.mean(preds, axis=0)
         print("Testing Error")
-        reportErr(mlp.predict(test_X)-test_y,'****************')
+        reportErr(rf.predict(test_X)-test_y,'****************')
 
         print("Naive Testing:")
         reportErr(np.mean(y)-test_y)
 
-#pickle.dump(MLP_list, open("Models/LinearRegression.pkl", "wb"))
+#pickle.dump(rf, open("Models/RandomForest.pkl", "wb"))
