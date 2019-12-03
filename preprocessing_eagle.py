@@ -58,23 +58,26 @@ for idx in range(674):
     df['fog'] = [row[6] for row in weatherLists]
     df['rain'] = [row[7] for row in weatherLists]
     df['snow'] = [row[8] for row in weatherLists]
+    df['weatherType'] =  df['haze']+df['fog']+df['rain']+df['snow']+(df['fog']!=0)*3+(df['rain']!=0)*5+(df['snow']!=0)*10
+    df['weatherType_'] = df['weatherType']
 
     days = df['t0'].values.astype('datetime64[D]')
     df['hday'] = [(d in holidays or (d-1) in holidays) for d in days]
 
     for i in range(2,6+1):
         df['wkday^{}'.format(i)] = df['wkday']**i
-    for i in range(2,8+1):
+    for i in range(2,12+1):
         df['hour^{}'.format(i)] = df['hour']**i
 
     df['h'], df['wkd'] = df['hour'], df['wkday']
     df['hour'] = df['hour'].astype(CategoricalDtype(categories=range(24)))
     df['wkday'] = df['wkday'].astype(CategoricalDtype(categories=range(7)))
+    df['weatherType'] = df['weatherType'].astype(CategoricalDtype(categories=range(14)))
 
     df['bor0'] = df['bor0'].astype(CategoricalDtype(categories=range(6)))
     df['bor1'] = df['bor1'].astype(CategoricalDtype(categories=range(6)))
 
-    df = pd.get_dummies(df, columns=['bor0', 'bor1', 'wkday', 'hour'])
+    df = pd.get_dummies(df, columns=['bor0', 'bor1', 'wkday', 'hour', 'weatherType'])
 
     for i in range(6):
         for j in range(6):
@@ -83,5 +86,5 @@ for idx in range(674):
     for col in ['t0','t1','loc0','loc1','loc_pair','dt']:#,'bor0_0', 'bor0_1', 'bor0_2', 'bor0_3', 'bor0_4', 'bor0_5', 'bor1_0', 'bor1_1', 'bor1_2', 'bor1_3', 'bor1_4', 'bor1_5']:
         del df[col]
 
-
+    df['bias']=1
     df.to_pickle('PreProcessedData_eagle/df_{}.pkl'.format(idx+1))

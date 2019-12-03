@@ -8,7 +8,7 @@ import numpy as np
 # how many files to test on
 TEST_SIZE = 1
 # how many files to train on
-TRAIN_SIZE = 100
+TRAIN_SIZE = 1
 # how many files to train on at a time
 BATCH_SIZE = 1
 
@@ -41,7 +41,8 @@ features = [
 for i in range(6):
     for j in range(6):
         features.append("bor{}to{}".format(i,j))
-
+# for i in range(14):
+#     features.append('weatherType_{}'.format(i))
 
 
 def reportErr(err,attention=''):
@@ -75,7 +76,7 @@ for feat in features:
 print("\n\n\n\n\n\n\ntraining")
 
 MLP_list = []
-mlp = sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(30,20,5),verbose=True,max_iter=100,learning_rate_init=0.001,warm_start=True,early_stopping=True)
+mlp = sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(10,3),verbose=True,max_iter=20,learning_rate_init=0.1,warm_start=True,early_stopping=True,tol=0.00010)
 
 for idx in range(TRAIN_SIZE // BATCH_SIZE):
     slice = train_files[BATCH_SIZE * idx:BATCH_SIZE * (idx + 1)]

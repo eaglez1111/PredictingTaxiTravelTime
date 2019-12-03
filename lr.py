@@ -22,7 +22,7 @@ features = [
     # "ps",
     "wkd",
     'h',
-    "start_time",
+    #"start_time",
     "euc_dist",
     "real_dist",
     # "humidity",
@@ -42,7 +42,8 @@ for i in range(2,4+1):
 for i in range(6):
     for j in range(6):
         features.append("bor{}to{}".format(i,j))
-
+# for i in range(14):
+#     features.append('weatherType_{}'.format(i))
 
 
 test_dfs = []
@@ -71,39 +72,51 @@ for feat in features:
 
 
 def reportErr(err,attention=''):
-    print("RMSE(L2): {}".format( np.linalg.norm(err)/np.sqrt(len(err)) ))
-    print(attention+"L1 Error: {}".format( np.mean(np.abs(err)) ))
-    print("Median Error: {}".format( np.median(np.abs(err)) ))
+    l2e = np.linalg.norm(err)/np.sqrt(len(err))
+    l1e = np.mean(np.abs(err))
+    median_e = np.median(np.abs(err))
+    print("RMSE(L2): {}".format( l2e ))
+    print(attention+"L1 Error: {}".format( l1e ))
+    print("Median Error: {}".format( median_e ))
+    return l2e,l1e,median_e
 
 
+N_samples, L2E, MeanE, MedianE  = [], [], [], []
+_stp = 2
+for num in [5000]:#range(_stp,120,_stp):#
+    print("training-----------------",num)
+    lr = sklearn.linear_model.LinearRegression()
+    for idx in range(TRAIN_SIZE // BATCH_SIZE):
+        slice = train_files[BATCH_SIZE * idx:BATCH_SIZE * (idx + 1)]
+        train_dfs = []
+        for i in slice:
+            train_dfs.append(pickle.load(open("PreProcessedData_eagle/df_{}.pkl".format(i), "rb")))
+        df = pd.concat(train_dfs)
+        df = df[df['travel_time'] >= 60]
+        df = df[df['travel_time'] <= 3600 * 0.5]
+        print("Loaded Batch".format(idx))
+        df = df.iloc[:num, :]
+        X = df[features]
+        y = df["travel_time"]
+
+        lr.fit(X, y)
 
 
-print("training")
-lr = sklearn.linear_model.LinearRegression()
-for idx in range(TRAIN_SIZE // BATCH_SIZE):
-    slice = train_files[BATCH_SIZE * idx:BATCH_SIZE * (idx + 1)]
-    train_dfs = []
-    for i in slice:
-        train_dfs.append(pickle.load(open("PreProcessedData_eagle/df_{}.pkl".format(i), "rb")))
-    df = pd.concat(train_dfs)
-    df = df[df['travel_time'] >= 60]
-    df = df[df['travel_time'] <= 3600 * 0.5]
-    print("Loaded Batch".format(idx))
-    X = df[features]
-    y = df["travel_time"]
+        if idx % 1 == 0:
+            print("Training Error")
+            reportErr(lr.predict(X)-y)
 
-    lr.fit(X, y)
+            #preds = [MLP.predict(test_X) for MLP in MLP_list]
+            #preds = np.mean(preds, axis=0)
+            print("Testing Error")
+            l2e,l1e,me=reportErr(lr.predict(test_X)-test_y,'**********************************')
+            L2E.append(l2e)
+            MeanE.append(l1e)
+            MedianE.append(me)
+            N_samples.append(num)
 
+            print("Naive Testing:")
+            reportErr(np.mean(y)-test_y)
 
-    if idx % 1 == 0:
-        print("Training Error")
-        reportErr(lr.predict(X)-y)
-
-        #preds = [MLP.predict(test_X) for MLP in MLP_list]
-        #preds = np.mean(preds, axis=0)
-        print("Testing Error")
-        reportErr(lr.predict(test_X)-test_y,'**********************************')
-
-        print("Naive Testing:")
-        reportErr(np.mean(y)-test_y)
-pickle.dump(lr, open("Models/RandomForest.pkl", "wb"))
+#np.save('./lr_study',[N_samples,L2E,MeanE,MedianE])
+#pickle.dump(lr, open("Models/RandomForest.pkl", "wb"))
