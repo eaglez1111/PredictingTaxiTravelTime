@@ -7,11 +7,11 @@ import numpy as np
 # how many files to test on
 TEST_SIZE = 1
 # how many files to train on
-TRAIN_SIZE = 4
+TRAIN_SIZE = 670
 # how many files to train on at a time
-BATCH_SIZE = 4
+BATCH_SIZE = 10
 # how many trees to add per batch
-TREES_PER_BATCH = 32
+TREES_PER_BATCH = 8
 
 shuffled_files = np.arange(1, 675)#np.random.permutation(np.arange(1, 675))
 train_files = shuffled_files[TEST_SIZE:TRAIN_SIZE+TEST_SIZE]
@@ -58,10 +58,10 @@ for i in range(6):
     for j in range(6):
         features.append("bor{}to{}".format(i,j))
 
-for i in range(2,4+1):
-    features.append('wkday^{}'.format(i))
-for i in range(2,6+1):
-    features.append('hour^{}'.format(i))
+# for i in range(2,4+1):
+#     features.append('wkday^{}'.format(i))
+# for i in range(2,6+1):
+#     features.append('hour^{}'.format(i))
 # for i in range(14):
 #     features.append('weatherType_{}'.format(i))
 
@@ -106,8 +106,8 @@ def reportErr(err,attention=''):
 
 
 N_samples, L2E, MeanE, MedianE  = [], [], [], []
-_stp = 5
-for num in [100000]:#np.append([1,2,3,4],range(_stp,400,_stp)):
+_stp = int(100000/20)
+for num in [100000]:# range(_stp,100000,_stp):#
     print("\n\n\ntraining-----------------",num)
     rf = sklearn.ensemble.RandomForestRegressor(n_estimators=0, min_samples_split=4, min_samples_leaf=8,
                                                 max_features="auto", warm_start=True, n_jobs=-1, verbose=0)
@@ -120,7 +120,7 @@ for num in [100000]:#np.append([1,2,3,4],range(_stp,400,_stp)):
         df = df[df['travel_time'] >= 60]
         df = df[df['travel_time'] <= 3600 * 4]
         print("Loaded Batch - {}".format(idx))
-        df = df.iloc[:num, :]
+        #df = df.iloc[:num, :]
         X = df[features]
         y = df["travel_time"]
 
@@ -143,6 +143,6 @@ for num in [100000]:#np.append([1,2,3,4],range(_stp,400,_stp)):
             print("Naive Testing:")
             reportErr(np.mean(y)-test_y)
 
-#np.save('./rf_study_x',[N_samples,L2E,MeanE,MedianE])
+#np.save('./rf_study_2',[N_samples,L2E,MeanE,MedianE])
 
 #pickle.dump(rf, open("Models/RandomForest.pkl", "wb"))
